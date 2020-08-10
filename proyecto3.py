@@ -1,7 +1,8 @@
 from tkinter import *
 from datetime import datetime
-import pickle
 import cv2
+import json
+import jsonpickle
 from visionAPI import reconocer_caras
 import tkinter as tk
 from tkinter import ttk
@@ -17,14 +18,15 @@ ventana.title("Asistencia")
 menu = Menu(ventana)
 new_item = Menu(menu)
 
-
+registros={"fecha":None,"curso":None,"cedula":None,"emocion":None}#lista en la cual se cargan los datos recaudados por medio de las diferentes funciones 
+lista=[]
+respaldo=[]
 
 def Asistencia():
     """[Esta función crea una ventana secundaria en la cual se carga los botones y 
     entrys los cuales vana permitir realizar las distintas funciones mencionasdas más adelante]
     """
-    registros=[]#lista en la cual se cargan los datos recaudados por medio de las diferentes funciones 
-
+    
     #ventana secundaria
     ventana1= Tk()
     ventana1.title("Datos")
@@ -39,35 +41,24 @@ def Asistencia():
     label2.grid(column=0,row=1,padx=(10,10), pady=(10,10))
     entry2 = Entry(ventana1)
     entry2.grid(column=1,row=1,padx=(10,10), pady=(10,10))
-    
+
     class registro():
         """[clase por la cual se van a administrar los datos para luego enviarlos al arbol]
         """
         fecha=None
         codigo_curso=None
         Cedula=None
-        emocion1=None
-        emocion2=None
-        emocion3=None
-        emocion4=None
-        emocion5=None
-        emocion6=None
-        emocion7=None
-        def __init__(self, fecha, codigo_curso, cedula, emocion1, emocion2, emocion3, emocion4, emocion5, emocion6, emocion7):
+        emocion=None
+        def __init__(self, fecha, codigo_curso, cedula, emocion):
             self.fecha=fecha
             self.codigo_curso=codigo_curso
             self.Cedula=cedula
-            self.emocion1=emocion1
-            self.emocion2=emocion2
-            self.emocion3=emocion3
-            self.emocion4=emocion4
-            self.emocion5=emocion5
-            self.emocion6=emocion6
-            self.emocion7=emocion7
+            self.emocion=emocion
+           
         def __str__(self):
-            string = u"[<asistencia> fecha:{1} codigo del curso:{2}  Cedula:{3} alegria:{4} tristeza:{5} Ira:{6} sorpresa:{7} Subexpuesta:{8} borrosa:{9} sombrero:{10}]" .format(self.fecha, self.codigo_curso, self.Cedula, self.emocion1, self.emocion2, self.emocion3, self.emocion4, self.emocion5, self.emocion6, self.emocion7)
+            string = u"[<asistencia> fecha:%s codigo del curso:%s Cedula:%s emocion:%s]" %(self.fecha, self.codigo_curso, self.Cedula, self.emocion)
             return string
-
+        
     def insert():
         """[Esta funcion sera llamda por medio del boton Leer Codigo y esta llama a la funcion codigo
         para que esta active la camara y tome una fotogracia del codigo Qr del carnet del estudiante
@@ -78,6 +69,7 @@ def Asistencia():
         entry.insert(0,a)
         entry2.insert(0,b)
 
+    
     def guardar():
         """[Esta funcion es llamada por medio del boton guardar, lo que hace esta es definir la fecha,
         datos que se encuentrar en los entry ya se que se hayan modificado o no, y las emociones de 
@@ -86,11 +78,24 @@ def Asistencia():
         Fecha=datetime.now()
         dato1=entry.get()
         dato2=entry2.get()
-        registros.append(registro(Fecha,dato2,dato1,v1,v2,v3,v4,v5,v6,v7))
-        #recorre la lista registros para poder inprimir utilizando la funcion del __str__ 
-        for x in registros:
-           print(x)
+        lista.append(registro(Fecha,dato2,dato1,total))
+        for x in lista:
+            respaldo.append(str(x))
+        
+        registros["fecha"]=(respaldo[0][respaldo[0].find("fecha")+6:respaldo[0].find("codigo")-1])
+        registros["curso"]=(respaldo[0][respaldo[0].find("curso")+6:respaldo[0].find("Cedula")-1])
+        registros["cedula"]=(respaldo[0][respaldo[0].find("Cedula")+7:respaldo[0].find("emocion")-1])
+        registros["emocion"]=(respaldo[0][respaldo[0].find("emocion")+8:respaldo[0].find("]")])
 
+        a_file = open("registros.json", "w")
+        json.dump(registros, a_file)
+        a_file.close()
+        
+        print(registros["fecha"])
+        print(registros["curso"])
+        print(registros["cedula"])
+        print(registros["emocion"])
+       
     def salir():
         """[Funcion que permite cerrar la ventana secundaria de la interfaz grafica]
         """
@@ -266,14 +271,9 @@ def g_ventana5 ():
         el nombre de cada una de estas expresiones al mostrarse en la ventana de la interfaz grafica]
         """
         #crea las variables de forma global para ser utilizadas por la clase registro
-        global v1
-        global v2
-        global v3
-        global v4
-        global v5
-        global v6
-        global v7
-
+        lmayor=[]
+        e=["Felicidad:","tristeza:","ira:","sorpresa:","subexpuesta:","borrosa:","sombrero:"]
+        global total
         v1=(str(valor))
         v2=(str(valor1))
         v3=(str(valor2))
@@ -281,6 +281,22 @@ def g_ventana5 ():
         v5=(str(valor4))
         v6=(str(valor5))
         v7=(str(valor6))
+        lmayor.append(v1)
+        lmayor.append(v2)
+        lmayor.append(v3)
+        lmayor.append(v4)
+        lmayor.append(v5)
+        lmayor.append(v6)
+        lmayor.append(v7)
+        numero=max(lmayor)
+        dato=(lmayor.index(numero))
+        palabra=e[dato]
+        total=palabra+str(numero)
+
+        
+        
+
+        
        
 
         
@@ -419,13 +435,9 @@ def captura_imagen():
         el nombre de cada una de estas expresiones al mostrarse en la ventana de la interfaz grafica]
         """
         #crea las variables de forma global para ser utilizadas por la clase registro
-        global v1
-        global v2
-        global v3
-        global v4
-        global v5
-        global v6
-        global v7
+        lmayor=[]
+        e=["Felicidad:","tristeza:","ira:","sorpresa:","subexpuesta:","borrosa:","sombrero:"]
+        global total
         v1=(str(valor))
         v2=(str(valor1))
         v3=(str(valor2))
@@ -433,7 +445,23 @@ def captura_imagen():
         v5=(str(valor4))
         v6=(str(valor5))
         v7=(str(valor6))
+        lmayor.append(v1)
+        lmayor.append(v2)
+        lmayor.append(v3)
+        lmayor.append(v4)
+        lmayor.append(v5)
+        lmayor.append(v6)
+        lmayor.append(v7)
+        numero=max(lmayor)
+        dato=(lmayor.index(numero))
+        palabra=e[dato]
+        total=palabra+str(numero)
+
+
+
   
+
+
 
 
 #menu principal para entrar a la segunda ventana
