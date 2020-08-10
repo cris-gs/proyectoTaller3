@@ -18,7 +18,7 @@ ventana.title("Asistencia")
 menu = Menu(ventana)
 new_item = Menu(menu)
 
-registros={"fecha":None,"curso":None,"cedula":None,"emocion":None}#lista en la cual se cargan los datos recaudados por medio de las diferentes funciones 
+#lista en la cual se cargan los datos recaudados por medio de las diferentes funciones 
 lista=[]
 respaldo=[]
 
@@ -30,7 +30,7 @@ def Asistencia():
     #ventana secundaria
     ventana1= Tk()
     ventana1.title("Datos")
-    ventana1.geometry("350x150")
+    ventana1.geometry("350x190")
     #se crea un entry que cuenta con un label a su izquierda para especificar que se mostrara el numerod e cedula
     label = Label(ventana1, text="Cedula")
     label.grid(column=0,row=0,padx=(10,10), pady=(10,10))
@@ -68,9 +68,8 @@ def Asistencia():
         codigo()
         entry.insert(0,a)
         entry2.insert(0,b)
-
     
-    def guardar():
+    def subir_asistencia():
         """[Esta funcion es llamada por medio del boton guardar, lo que hace esta es definir la fecha,
         datos que se encuentrar en los entry ya se que se hayan modificado o no, y las emociones de 
         de la foto del estudiantes ya haya sido cargada o tomada.]
@@ -79,50 +78,55 @@ def Asistencia():
         dato1=entry.get()
         dato2=entry2.get()
         lista.append(registro(Fecha,dato2,dato1,total))
-        for x in lista:
-            respaldo.append(str(x))
         
-        registros["fecha"]=(respaldo[0][respaldo[0].find("fecha")+6:respaldo[0].find("codigo")-1])
-        registros["curso"]=(respaldo[0][respaldo[0].find("curso")+6:respaldo[0].find("Cedula")-1])
-        registros["cedula"]=(respaldo[0][respaldo[0].find("Cedula")+7:respaldo[0].find("emocion")-1])
-        registros["emocion"]=(respaldo[0][respaldo[0].find("emocion")+8:respaldo[0].find("]")])
-
-        a_file = open("registros.json", "w")
-        json.dump(registros, a_file)
+    def guardar():
+        a_file = open("registros.bin", "w")
+        json.dump(lista, a_file)
         a_file.close()
-        
-        print(registros["fecha"])
-        print(registros["curso"])
-        print(registros["cedula"])
-        print(registros["emocion"])
-       
+
+    def abrir():    
+        a_file = open("registros.bin", "r")
+        salida = a_file.read()
+        print(salida)
+
     def salir():
         """[Funcion que permite cerrar la ventana secundaria de la interfaz grafica]
         """
         ventana1.destroy()
+
     #Boton que permite tomar una fotografia del codigo Qr
     btn = Button(ventana1, text="Leer Codigo",command=insert)
     btn.grid(column=0, row=2,padx=(10,10), pady=(10,10))
 
     #Boton que permite tomar una forografia al estudiante para reconocer la emosiones con las 
-    btn = Button(ventana1, text="Tomar Foto",command=captura_imagen)
+    btn = Button(ventana1, text="Tomar Foto",command=tomar_foto)
     btn.grid(column=1, row=2,padx=(10,10), pady=(10,10))
 
     #Boton que permite al estudiante seleccionar una foto desde su explorador de archivos
-    btn = Button(ventana1, text="Cargar Foto",command=g_ventana5)
+    btn = Button(ventana1, text="Cargar Foto",command=cargar_foto)
     btn.grid(column=2, row=2,padx=(10,10), pady=(10,10))
+
+    #Boton para cargarla fecha, cedula, codigo del curso y emosiones en el arbol.
+    btn = Button(ventana1, text="Subir asistencia",command=subir_asistencia)
+    btn.grid(column=2, row=0,padx=(10,10), pady=(10,10))
+
+    #Boton para ver la asistencia anteriormente guardada en archivos.
+    btn = Button(ventana1, text="ver registros",command=abrir)
+    btn.grid(column=0, row=3,padx=(10,10), pady=(10,10))
+
+    #Boton para guardar la fecha, cedula, codigo del curso y emosiones en archivos.
+    btn = Button(ventana1, text="Guardar", command=guardar)
+    btn.grid(column=1, row=3,padx=(10,10), pady=(10,10))
 
     #Boton para salir de la ventana 
     btn = Button(ventana1, text="Salir",command=salir)
-    btn.grid(column=2, row=1,padx=(10,10), pady=(10,10))
+    btn.grid(column=2, row=3,padx=(10,10), pady=(10,10))
+   
 
-    #Boton para guardar la fecha, cedula, codigo del curso y emosiones.
-    btn = Button(ventana1, text="Guardar", command=guardar)
-    btn.grid(column=2, row=0,padx=(10,10), pady=(10,10))
 
     ventana1.mainloop()
     
-def g_ventana5 ():
+def cargar_foto ():
     """[permite seleccionar una imagen para cargarla y ser reconocida, extraela ubicaion de 
     la imagen seleccionada y la almacena en un archivo temporal txt para separar la ubicacion
     de los demas datos que tiene la variable ventana.filename]
@@ -292,13 +296,6 @@ def g_ventana5 ():
         dato=(lmayor.index(numero))
         palabra=e[dato]
         total=palabra+str(numero)
-
-        
-        
-
-        
-       
-
         
 def codigo():
     """[toma una fotografia del codigo Qr]
@@ -322,8 +319,7 @@ def codigo():
     a=data[0:8]
     b=data[9:]
    
-
-def captura_imagen():
+def tomar_foto():
     """[permite tomar una forografia al estudiantes y cargarla al visionAPI de google para reconocer las
     emociones]
     """
